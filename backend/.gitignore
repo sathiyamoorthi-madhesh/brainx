@@ -3,9 +3,6 @@ __pycache__/
 .env
 .env*
 
-
-alembic/
-alembic.ini
 .cpython-310.pyc
 .venv
 /venv/

@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -160,6 +161,34 @@ class CRUDBatch:
             .order_by(Batch.created_at.desc())
         )
         return result.scalars().first()
+
+    async def get_by_teacher(self, db: AsyncSession, *, teacher_id: UUID, skip: int = 0, limit: int = 100) -> List[Batch]:
+        """
+        Get batches assigned to a teacher.
+        """
+        result = await db.execute(
+            select(Batch)
+            .filter(Batch.teacher_id == teacher_id)
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
+
+    async def get_by_student(self, db: AsyncSession, *, user_id: UUID, skip: int = 0, limit: int = 100) -> List[Batch]:
+        """
+        Get batches a student is enrolled in.
+        """
+        result = await db.execute(
+            select(Batch)
+            .join(BatchMember)
+            .filter(
+                BatchMember.user_id == user_id,
+                BatchMember.status == BatchMemberStatus.active
+            )
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
 
 class CRUDBatchMember:
     async def get(self, db: AsyncSession, id: int) -> Optional[BatchMember]:

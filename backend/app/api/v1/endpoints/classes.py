@@ -5,7 +5,7 @@ from app.api import deps
 from app.crud.crud_batch import batch as crud_batch, batch_member as crud_batch_member
 from app.crud.crud_course import course as crud_course # To check course existence
 from app.crud.crud_user import user as crud_user
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.batch import Batch, BatchCreate, BatchUpdate, BatchMember, BatchMemberCreate, BatchDetail, BatchMemberDetail
 from app.schemas.chat import ChatCreate, ChatMemberCreate, MessageCreate
 from app.models.chat import ChatTypeEnum, ChatMemberRoleEnum
@@ -24,9 +24,22 @@ async def read_batches(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve batches.
+    Retrieve batches based on user role.
     """
-    batches = await crud_batch.get_multi(db, skip=skip, limit=limit)
+    print(f"DEBUG: current_user: {current_user.email}, role: {current_user.role}, type: {type(current_user.role)}")
+    if current_user.role == UserRole.admin:
+        print("DEBUG: Role is admin")
+        batches = await crud_batch.get_multi(db, skip=skip, limit=limit)
+    elif current_user.role == UserRole.teacher:
+        print("DEBUG: Role is teacher")
+        batches = await crud_batch.get_by_teacher(db, teacher_id=current_user.id, skip=skip, limit=limit)
+    elif current_user.role == UserRole.student:
+        print("DEBUG: Role is student")
+        batches = await crud_batch.get_by_student(db, user_id=current_user.id, skip=skip, limit=limit)
+    else:
+        print("DEBUG: Role is other")
+        batches = []
+        
     return batches
 
 @router.post("/", response_model=Batch)

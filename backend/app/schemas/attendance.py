@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import datetime, date
+from datetime import datetime, date as date_type
 from pydantic import BaseModel
 from uuid import UUID
 from app.models.attendance import AttendanceStatus
@@ -14,7 +14,7 @@ class AttendanceCreate(AttendanceBase):
     student_id: UUID
     session_id: Optional[int] = None  # Optional for date-based attendance
     batch_id: Optional[int] = None
-    date: Optional[date] = None  # For date-based attendance
+    date: Optional[date_type] = None  # For date-based attendance
 
 class AttendanceUpdate(BaseModel):
     status: Optional[AttendanceStatus] = None
@@ -26,7 +26,7 @@ class Attendance(AttendanceBase):
     session_id: Optional[int] = None
     batch_id: Optional[int] = None
     course_id: Optional[int] = None
-    date: Optional[date] = None
+    date: Optional[date_type] = None
     created_at: datetime
     student: Optional[UserResponse] = None
     session: Optional[ClassSession] = None
@@ -37,5 +37,5 @@ class Attendance(AttendanceBase):
 class AttendanceBulkCreate(BaseModel):
     session_id: Optional[int] = None  # Optional for date-based attendance
     batch_id: Optional[int] = None
-    date: Optional[date] = None
+    date: Optional[date_type] = None
     records: List[AttendanceCreate]
